@@ -6,9 +6,9 @@ spring:
     name: auth-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/sentinelx_auth
+    url: jdbc:postgresql://localhost:5432/sentinelx
     username: postgres
-    password: postgres
+    password: password
 
   jpa:
     hibernate:
@@ -21,4 +21,4 @@ spring:
         format_sql: true
 
 jwt:
-  secret: mySuperSecretKeyForSentinelX
+  secret: mysupersecurejwttokenkeymysupersecurejwttokenkey

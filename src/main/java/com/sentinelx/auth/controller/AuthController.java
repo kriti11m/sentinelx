@@ -1,4 +1,6 @@
 package com.sentinelx.auth.controller;
+import com.sentinelx.auth.dto.AuthResponse;
+import com.sentinelx.auth.dto.LoginRequest;
 import lombok.RequiredArgsConstructor;
 import com.sentinelx.auth.dto.SignupRequest;
 import com.sentinelx.auth.service.AuthService;
@@ -16,6 +18,13 @@ public class AuthController {
     public String signup(@RequestBody SignupRequest request){
         authService.signup(request);
         return "User Registered successful";
+    }
+    @PostMapping("/login")
+    public AuthResponse login(
+            @RequestBody LoginRequest request
+    ) {
+
+        return authService.login(request);
     }
 }
 
