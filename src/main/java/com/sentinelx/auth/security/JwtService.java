@@ -3,7 +3,7 @@ package com.sentinelx.auth.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +13,13 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET =
-            "mysecretkeymysecretkeymysecretkey123456";
+    @Value("${jwt.secret}")
+    private String secret;
 
-    private final SecretKey key =
-            Keys.hmacShaKeyFor(SECRET.getBytes());
+    private SecretKey getSignKey() {
+
+        return Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(String email) {
 
@@ -25,20 +27,22 @@ public class JwtService {
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(
-                        new Date(System.currentTimeMillis() + 1000 * 60 * 60)
+                        new Date(System.currentTimeMillis()
+                                + 1000 * 60 * 60)
                 )
-                .signWith(key)
+                .signWith(getSignKey())
                 .compact();
     }
 
     public String extractUsername(String token) {
+
         return extractClaims(token).getSubject();
     }
 
     private Claims extractClaims(String token) {
 
         return Jwts.parser()
-                .verifyWith(key)
+                .verifyWith(getSignKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

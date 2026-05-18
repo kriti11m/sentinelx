@@ -15,11 +15,13 @@ public class SecurityConfig {
 
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/auth/**").permitAll()
-                        .anyExchange().authenticated()
+                        .anyExchange().permitAll()
                 )
+
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
         return http.build();
