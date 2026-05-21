@@ -1,5 +1,14 @@
 package com.sentinelx.events.transaction;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TransactionEvent {
 
     private String transactionId;
@@ -12,60 +21,12 @@ public class TransactionEvent {
 
     private String status;
 
-    public TransactionEvent() {
-    }
+    private String deviceId;
 
-    public TransactionEvent(
-            String transactionId,
-            String sender,
-            String receiver,
-            Double amount,
-            String status
-    ) {
-        this.transactionId = transactionId;
-        this.sender = sender;
-        this.receiver = receiver;
-        this.amount = amount;
-        this.status = status;
-    }
+    private String ipAddress;
 
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
-    }
-
-    public Double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Double amount) {
-        this.amount = amount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    @JsonFormat(
+            pattern = "yyyy-MM-dd'T'HH:mm:ss"
+    )
+    private LocalDateTime timestamp;
 }

@@ -11,3 +11,10 @@ spring:
     consumer:
       group-id: fraud-group
       auto-offset-reset: earliest
+
+
+  spring:
+    data:
+      redis:
+        host: localhost
+        port: 6379
