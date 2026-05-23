@@ -1,6 +1,6 @@
 package com.sentinelx.fraud.kafka.producer;
 
-import com.sentinelx.events.fraud.FraudAlertEvent;
+import com.sentinelx.events.fraud.AccountFreezeEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -9,21 +9,22 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FraudAlertProducer {
+public class FreezeEventProducer {
 
-    private final KafkaTemplate<String, FraudAlertEvent> kafkaTemplate;
+    private final KafkaTemplate<String, AccountFreezeEvent> kafkaTemplate;
 
-    public void sendFraudAlert(
-            FraudAlertEvent event
+
+    public void publishFreezeEvent(
+            AccountFreezeEvent event
     ) {
 
-        log.info(
-                "Publishing Fraud Alert: {}",
+        log.error(
+                "Publishing Account Freeze Event: {}",
                 event
         );
 
         kafkaTemplate.send(
-                "fraud-alert",
+                "account-freeze",
                 event
         );
     }

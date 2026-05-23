@@ -1,10 +1,9 @@
 package com.sentinelx.fraud.kafka.consumer;
 
+import com.sentinelx.events.fraud.AccountFreezeEvent;
 import com.sentinelx.events.transaction.TransactionEvent;
-import com.sentinelx.fraud.service.FraudDecisionService;
-import com.sentinelx.fraud.service.FraudRuleService;
-import com.sentinelx.fraud.service.ProcessedEventService;
-import com.sentinelx.fraud.service.VelocityFraudService;
+import com.sentinelx.fraud.kafka.producer.FreezeEventProducer;
+import com.sentinelx.fraud.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -26,6 +25,18 @@ public class FraudConsumer {
 
     private final ProcessedEventService
             processedEventService;
+
+    private final DeviceFingerprintService
+            deviceFingerprintService;
+
+    private final IpReputationService
+            ipReputationService;
+
+    private final FraudAlertService
+            fraudAlertService;
+
+    private final FreezeEventProducer
+            freezeEventProducer;
 
     @KafkaListener(
             topics = "transaction-created",
@@ -61,10 +72,16 @@ public class FraudConsumer {
         try {
 
             // =====================================
-            // FRAUD RULE ENGINE
+            // INITIAL RISK SCORE
             // =====================================
 
-            int riskScore =
+            int riskScore = 0;
+
+            // =====================================
+            // RULE BASED FRAUD CHECKS
+            // =====================================
+
+            riskScore +=
                     fraudRuleService
                             .calculateRiskScore(event);
 
@@ -79,7 +96,27 @@ public class FraudConsumer {
                             );
 
             // =====================================
-            // FRAUD DECISION ENGINE
+            // DEVICE FINGERPRINT ANALYSIS
+            // =====================================
+
+            riskScore +=
+                    deviceFingerprintService
+                            .analyzeDevice(
+                                    event.getDeviceId()
+                            );
+
+            // =====================================
+            // IP REPUTATION ANALYSIS
+            // =====================================
+
+            riskScore +=
+                    ipReputationService
+                            .checkIpRisk(
+                                    event.getIpAddress()
+                            );
+
+            // =====================================
+            // FINAL DECISION
             // =====================================
 
             String decision =
@@ -87,7 +124,7 @@ public class FraudConsumer {
                             .decide(riskScore);
 
             // =====================================
-            // LOG FINAL RESULTS
+            // LOGGING
             // =====================================
 
             log.warn(
@@ -101,14 +138,47 @@ public class FraudConsumer {
             );
 
             // =====================================
-            // FAILURE SIMULATION
+            // SAVE FRAUD ALERT
             // =====================================
 
-            if (riskScore >= 90) {
+            fraudAlertService.saveFraudAlert(
+                    event.getTransactionId(),
+                    event.getSender(),
+                    event.getAmount(),
+                    riskScore,
+                    decision,
+                    "Suspicious Transaction",
+                    event.getIpAddress(),
+                    event.getDeviceId()
+            );
+
+            // =====================================
+            // FREEZE ACCOUNT LOGIC
+            // =====================================
+
+            if ("FREEZE".equals(decision)) {
 
                 log.error(
-                        "CRITICAL FRAUD DETECTED - ACCOUNT SHOULD BE FROZEN"
+                        "CRITICAL FRAUD DETECTED - FREEZING ACCOUNT"
                 );
+
+                AccountFreezeEvent freezeEvent =
+                        AccountFreezeEvent.builder()
+                                .userId(
+                                        event.getSender()
+                                )
+                                .reason(
+                                        "High Fraud Risk"
+                                )
+                                .riskScore(
+                                        riskScore
+                                )
+                                .build();
+
+                freezeEventProducer
+                        .publishFreezeEvent(
+                                freezeEvent
+                        );
             }
 
             // =====================================

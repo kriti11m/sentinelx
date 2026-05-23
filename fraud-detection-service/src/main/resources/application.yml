@@ -5,6 +5,16 @@ spring:
   application:
     name: fraud-detection-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5433/sentinelx
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
   kafka:
     bootstrap-servers: localhost:9092
 
@@ -12,9 +22,7 @@ spring:
       group-id: fraud-group
       auto-offset-reset: earliest
 
-
-  spring:
-    data:
-      redis:
-        host: localhost
-        port: 6379
+  data:
+    redis:
+      host: localhost
+      port: 6379
