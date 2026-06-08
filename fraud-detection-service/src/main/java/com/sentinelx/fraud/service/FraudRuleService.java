@@ -23,6 +23,10 @@ public class FraudRuleService {
             );
         }
 
+        if(event.getTimestamp() == null){
+            return 0;
+        }
+
         int hour =
                 event.getTimestamp().getHour();
 
